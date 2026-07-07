@@ -533,6 +533,21 @@ app.get("/", (req, res) => {
     });
 });
 
+/* ================= SELF-PINGING TO KEEP RENDER AWAKE ================= */
+const https = require("https");
+const RENDER_URL = process.env.RENDER_EXTERNAL_URL;
+if (RENDER_URL) {
+    console.log(`⏱️ Self-pinging enabled for: ${RENDER_URL}`);
+    // Ping every 10 minutes to reset Render's 15-minute inactivity timer
+    setInterval(() => {
+        https.get(RENDER_URL, (res) => {
+            console.log(`📡 [Self-Ping] Ping sent to reset inactivity timer. Status Code: ${res.statusCode}`);
+        }).on("error", (err) => {
+            console.error(`❌ [Self-Ping] Error pinging server:`, err.message);
+        });
+    }, 10 * 60 * 1000); // 10 minutes
+}
+
 /* ================= LISTEN ON PORT ================= */
 server.listen(PORT, () => {
     console.log(`🚀 Server running at http://localhost:${PORT}`);
